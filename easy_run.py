@@ -22,6 +22,7 @@ throttle_number = 50  # Number of requests to make before sleeping for delay sec
 sleep_delay_max = 2500  # Maximum number of milliseconds to sleep for
 max_added = 250  # Maximum number of assignments to add to Todoist at once. Todoist API limit is 450 requests per 15 minutes and you can quickly hit this if adding a massive number of assignments.
 limit_reached = False  # Global var used to terminate early if limit is reached or API returns an error.
+background_activated = False
 
 
 def main():
@@ -40,6 +41,24 @@ def main():
     transfer_assignments_to_todoist()
     canvas_assignment_stats()
     print("Done!")
+    background()
+
+
+def background():
+    """After setup is finished, it asks the user if they want to have it run again in the background.
+    """
+    global background_activated
+    if background_activated:
+        # Don't run again if it's already running in the background
+        return
+    
+    background_activated = yes_no("Leave running in the background?")
+    
+    if background_activated:
+        while True:
+            print("Time to sleep...")
+            time.sleep(600)
+            main()
 
 
 # Function for Yes/No response prompts during setup
@@ -130,6 +149,7 @@ def initial_config():  # Initial configuration for first time users
 
 def select_courses():
     global config
+    global background_activated
 
     try:
         response = requests.get(
@@ -141,6 +161,11 @@ def select_courses():
             print("Unauthorized; Check API Key")
             exit()
         # Note that only courses in "Active" state are returned
+
+        if background_activated:
+            # If the it's running in the background, don't interrupt the flow. Only asks when program first starts.
+            return
+
         if config["courses"]:
             use_previous_input = input(
                 "You have previously selected courses. Would you like to use the courses selected last time? (y/n) "
