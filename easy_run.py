@@ -43,7 +43,7 @@ def main():
     print("Done!")
     background()
 
-def modify_background_settings(background_sleep_seconds=600):
+def modify_background_settings(background_sleep_seconds=86400):
     global config
 
     config['background_sleep_seconds'] = background_sleep_seconds
@@ -119,7 +119,7 @@ def initial_config():  # Initial configuration for first time users
         config["sync_null_assignments"] = True
         config["sync_locked_assignments"] = True
         config["sync_no_due_date_assignments"] = True
-        config["background_sleep_seconds"] = 600
+        config["background_sleep_seconds"] = 86400
     if defaults == False:
         custom_url = yes_no("Use default Canvas URL? (https://canvas.instructure.com)")
         if custom_url == True:
@@ -159,7 +159,7 @@ def initial_config():  # Initial configuration for first time users
             config["sync_null_assignments"] = True
             config["sync_locked_assignments"] = True
             config["sync_no_due_date_assignments"] = True
-            config["background_sleep_seconds"] = 600
+            config["background_sleep_seconds"] = 86400
     config["courses"] = []
     with open("config.json", "w") as outfile:
         json.dump(config, outfile)
