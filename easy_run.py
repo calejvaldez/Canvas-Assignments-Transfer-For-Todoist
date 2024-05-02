@@ -43,21 +43,37 @@ def main():
     print("Done!")
     background()
 
+def modify_background_settings(background_sleep_seconds=600):
+    global config
+
+    config['background_sleep_seconds'] = background_sleep_seconds
+
+    with open("config.json", "w") as outfile:
+        json.dump(config, outfile)
 
 def background():
     """After setup is finished, it asks the user if they want to have it run again in the background.
     """
+    global config
     global background_activated
+
+    if 'background_sleep_seconds' not in config.keys():
+        # Users without `background_sleep_seconds` likely used the program before without
+        # these features. This is here as a failsafe without having to re-initiate the entire setup process.
+        modify_background_settings() # initiates with defaults
+
     if background_activated:
         # Don't run again if it's already running in the background
         return
     
     background_activated = yes_no("Leave running in the background?")
     
+    modify_background_settings(background_sleep_seconds=config['background_sleep_seconds'])
+    
     if background_activated:
         while True:
-            print("Time to sleep...")
-            time.sleep(600)
+            print(f"Sleeping for {config['background_sleep_seconds']} seconds. Modify the `config.json` to change!")
+            time.sleep(config["background_sleep_seconds"])
             main()
 
 
@@ -103,6 +119,7 @@ def initial_config():  # Initial configuration for first time users
         config["sync_null_assignments"] = True
         config["sync_locked_assignments"] = True
         config["sync_no_due_date_assignments"] = True
+        config["background_sleep_seconds"] = 600
     if defaults == False:
         custom_url = yes_no("Use default Canvas URL? (https://canvas.instructure.com)")
         if custom_url == True:
@@ -124,6 +141,10 @@ def initial_config():  # Initial configuration for first time users
                 "Enter any Label names that you would like assigned to the tasks, separated by space)"
             )
             config_input = input(">")
+            print(
+                "How many seconds should background refresh wait to get assignments?"
+            )
+            config["background_sleep_seconds"] = int(input(">"))
             config["todoist_task_labels"] = config_input.split()
             null_assignments = yes_no("Sync not graded/not submittable assignments?")
             config["sync_null_assignments"] = null_assignments
@@ -138,6 +159,7 @@ def initial_config():  # Initial configuration for first time users
             config["sync_null_assignments"] = True
             config["sync_locked_assignments"] = True
             config["sync_no_due_date_assignments"] = True
+            config["background_sleep_seconds"] = 600
     config["courses"] = []
     with open("config.json", "w") as outfile:
         json.dump(config, outfile)
